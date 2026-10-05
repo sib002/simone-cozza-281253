@@ -38,7 +38,7 @@ class Tapes():
             price = 2
         if n_trips < 6 and n_trips > 3:
             price = 1
-        else:
+        if n_trips >= 6:
             price = '0'
         
         if self.fares.get(card) == None:
@@ -94,7 +94,8 @@ class Parser():
         self.possible_cmds={ 'TAPIN': (2, tapes.tap_in),
                              'TAPOUT': (2,tapes.tap_out),
                              'PENDING':(0,tapes.pending),
-                             'FARE':(1,tapes.fare)
+                             'FARE':(1,tapes.fare),
+                             
                     }
         
         self.possible_stations=['garibaldi',
@@ -132,6 +133,8 @@ class Parser():
                     return ('ERROR invalid command')
                 if command == 'PENDING':
                     return funct()
+                if command == 'FARE':
+                    return funct(*args)
 
 def main():
     tapes=Tapes()
