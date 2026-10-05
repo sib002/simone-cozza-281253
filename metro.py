@@ -1,4 +1,5 @@
 import sys
+from collections import Counter
 
 #dict con 'CARTA': (azione, stazione)
 #quando fa tapin controlla se carta è gia presente -> ERRORE GIA TAPPATO IN, altrimenti inserisci (carta: stazione,azione) e aggiungi al registro
@@ -12,8 +13,6 @@ class Tapes():
     #dizionario con ogni tap in quella stazione: [mario, gianni, gianni]
     register={} #usare per regulars
 
-    #'card':(actions,station) dict con azioni per tracciare tap in e out 
-    #assumo che se la carta c'è è tapin
     actions={}
     def __init__(self):
         self.register={'garibaldi':[],
@@ -86,6 +85,11 @@ class Tapes():
             return '0'
         else:
             return self.fares[card]
+    
+    def regulars(self, station):
+        cnt=Counter(self.register[station])
+        new=cnt.sorted(cnt.items(), key=lambda items : items[1] )
+        return new
 
 class Parser():
 
@@ -95,7 +99,7 @@ class Parser():
                              'TAPOUT': (2,tapes.tap_out),
                              'PENDING':(0,tapes.pending),
                              'FARE':(1,tapes.fare),
-                             
+                             'REGULARS' : (1,tapes.regulars)
                     }
         
         self.possible_stations=['garibaldi',
@@ -112,29 +116,36 @@ class Parser():
                         'manzoni']
 
     def parse(self, cmd : str):
-        command_lst=cmd.split()
-        command=command_lst[0]
-        args=command_lst[1:]
+        if len(cmd) == 0 or cmd == '' or cmd == None or not cmd:
+            return ('ERROR invalid command')
+        else: 
+            command_lst=cmd.split()
+            command=command_lst[0]
+            args=command_lst[1:]
 
-        if command not in self.possible_cmds:
-            return 'ERROR invalid command'
-        else:
-            n_args , funct = self.possible_cmds[command]
-            if len(args) != n_args:
+            if command not in self.possible_cmds:
                 return 'ERROR invalid command'
             else:
-                if command == 'TAPIN':
-                    if args[1] in self.possible_stations:
+                n_args , funct = self.possible_cmds[command]
+                if len(args) != n_args:
+                    return 'ERROR invalid command'
+                else:
+                    if command == 'TAPIN':
+                        if args[1] in self.possible_stations:
+                            return funct(*args)
+                        return('ERROR invalid command')
+                    if command == 'TAPOUT':
+                        if args[1] in self.possible_stations:
+                            return funct(*args)
+                        return ('ERROR invalid command')
+                    if command == 'PENDING':
+                        return funct()
+                    if command == 'FARE':
                         return funct(*args)
-                    return('ERROR invalid command')
-                if command == 'TAPOUT':
-                    if args[1] in self.possible_stations:
+                    if commnad == 'REGULARS':
+                        if args[0] not in self.station:
+                            return ('ERROR invalid command')
                         return funct(*args)
-                    return ('ERROR invalid command')
-                if command == 'PENDING':
-                    return funct()
-                if command == 'FARE':
-                    return funct(*args)
 
 def main():
     tapes=Tapes()
